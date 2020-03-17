@@ -24,7 +24,7 @@ public final class Principal {
     private static Dijkstra d = new Dijkstra();
 
     public static void main(String[] args) {
-        InterfacePrincipal nova = new InterfacePrincipal();
+        InterfacePrincipal nova = new InterfacePrincipal(); //Corrigir
         nova.setVisible(true);
     }
 
