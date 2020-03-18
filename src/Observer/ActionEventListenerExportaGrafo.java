@@ -11,16 +11,14 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class ActionEventListenerExportaGrafo implements ActionListener {
-
-    InterfacePrincipal padrao;
-
-    public ActionEventListenerExportaGrafo(InterfacePrincipal novainterface) {
-        this.padrao = novainterface;
+Controlador padrao;
+    public ActionEventListenerExportaGrafo(Controlador novo) {
+        this.padrao = novo;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        Controlador.exportaConfiguracoes(padrao);
+        padrao.exportaConfiguracoes();
     }
 
 }

@@ -5,6 +5,7 @@
  */
 package Observer;
 
+import Control.Controlador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -13,6 +14,10 @@ import java.awt.event.ActionListener;
  * @author Marcos
  */
 public class ActionEventListenerSaida implements ActionListener {
+Controlador padrao;
+    public ActionEventListenerSaida(Controlador novo) {
+        this.padrao = novo;
+    }
 
     @Override
     public void actionPerformed(ActionEvent ae) {

@@ -18,15 +18,15 @@ import java.awt.event.ActionListener;
  */
 public class ActionEventListenerConectaVertices implements ActionListener {
 
-    private InterfacePrincipal padrao;
-
-    public ActionEventListenerConectaVertices(InterfacePrincipal nova) {
-        padrao = nova;
+  Controlador padrao;
+    public ActionEventListenerConectaVertices(Controlador novo) {
+        this.padrao = novo;
     }
+
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        Controlador.adicionaAresta(padrao);
+        padrao.adicionaAresta();
     }
 
 }

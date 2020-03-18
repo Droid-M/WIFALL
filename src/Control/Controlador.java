@@ -3,11 +3,18 @@ package Control;
 import DAO.Grafo;
 import Model.Aresta;
 import Model.Vertice;
-import View.IRemoveVertice;
+import Observer.ActionEventListenerAdicionaVertice;
+import Observer.ActionEventListenerConectaVertices;
+import Observer.ActionEventListenerExportaGrafo;
+import Observer.ActionEventListenerImportaGrafo;
+import Observer.ActionEventListenerRemove;
+import Observer.ActionEventListenerRolagemMouse;
+import Observer.ActionEventListenerSaida;
+import Observer.ActionEventListenerSelecionaAparelho;
+import Observer.EventosMouse;
 import View.InterfacePrincipal;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.util.Collection;
@@ -15,9 +22,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
 
-public final class Controlador {
+public class Controlador {
 
     private final static int altura_vertice_Rooteador = 30;
     private static String tipo_aparelho = "computador";
@@ -36,7 +42,16 @@ public final class Controlador {
     private static HashMap<String, mxCell> listaArestas = new HashMap();
     private static HashMap<String, mxCell> listaVertices = new HashMap();
 
-    public static void adicionaVertice(InterfacePrincipal i) {
+    private InterfacePrincipal i;
+
+    public Controlador() {
+        i = new InterfacePrincipal(new ActionEventListenerRemove(this), new ActionEventListenerSaida(this),
+                new ActionEventListenerExportaGrafo(this), new ActionEventListenerImportaGrafo(this),
+                new ActionEventListenerConectaVertices(this), new ActionEventListenerSelecionaAparelho(this),
+                new ActionEventListenerAdicionaVertice(this), new EventosMouse(this), new ActionEventListenerRolagemMouse(this));
+    }
+
+    public void adicionaVertice() {
         String tipoVertice = tipo_aparelho;
         String nomeVertice = i.recebeNomeVertice();
         Pattern pattern = Pattern.compile("\\w");
@@ -47,7 +62,7 @@ public final class Controlador {
                 i.exibeMensagem("O vértice '" + nomeVertice + "' não será adicionado porque já existe no sistema!");
             }
             else {
-                insereVerticeInterface(i, nomeVertice, tipoVertice);
+                insereVerticeInterface(nomeVertice, tipoVertice);
             }
         }
         else {
@@ -55,7 +70,7 @@ public final class Controlador {
         }
     }
 
-    public static void adicionaAresta(InterfacePrincipal i) {
+    public void adicionaAresta() {
         String[] informacoes = i.recebeInformacoesLigacao();
         Pattern executor1 = Pattern.compile("\\w");
         Matcher buscador1 = executor1.matcher(informacoes[0]);
@@ -71,12 +86,13 @@ public final class Controlador {
             return;
         }
         int pesoLigacao = Integer.parseInt(informacoes[2]);
-        if (!Principal.estabeleceNovaLigacao(informacoes[0], informacoes[1], pesoLigacao) || insereArestaInterface(i, informacoes[0], informacoes[1], informacoes[2]) == null) {
+        if (!Principal.estabeleceNovaLigacao(informacoes[0], informacoes[1], pesoLigacao)
+                || insereArestaInterface(informacoes[0], informacoes[1], informacoes[2]) == null) {
             i.exibeMensagem("Aresta não adicionada! Verifique a existência dos vértices informados e de suas ligações!");
         }
     }
 
-    private static mxCell insereVerticeInterface(InterfacePrincipal i, String nomeVertice, String tipoVertice) {
+    private mxCell insereVerticeInterface(String nomeVertice, String tipoVertice) {
         mxCell novoVertice = null;
         if (listaVertices.get(nomeVertice) == null) {
             mxGraph grafo = i.getPainel();
@@ -94,7 +110,7 @@ public final class Controlador {
             listaVertices.put(nomeVertice, novoVertice);
             if (!listaVertices.isEmpty() && primeiroVertice != null) {
                 mxCell novaAresta = (mxCell) grafo.insertEdge(pai, "", "", primeiroVertice, novoVertice, estilo_aresta);
-                reorganizaLayout(i);
+                reorganizaLayout();
                 novaAresta.setVisible(false);
             }
             else {
@@ -106,7 +122,7 @@ public final class Controlador {
         return null;
     }
 
-    private static mxCell insereArestaInterface(InterfacePrincipal i, String nomeVertice1, String nomeVertice2, String nomeAresta) {
+    private mxCell insereArestaInterface(String nomeVertice1, String nomeVertice2, String nomeAresta) {
         if (listaArestas.get(criaIdentificador(nomeVertice1, nomeVertice2)) == null
                 && listaArestas.get(criaIdentificador(nomeVertice2, nomeVertice1)) == null) {
 
@@ -117,31 +133,31 @@ public final class Controlador {
             grafo.getModel().beginUpdate();
             mxCell novaAresta = (mxCell) grafo.insertEdge(pai, nomeAresta, nomeAresta, vertice1, vertice2, estilo_aresta);
             listaArestas.put(criaIdentificador(nomeVertice1, nomeVertice2), novaAresta);
-            reorganizaLayout(i);
+            reorganizaLayout();
             grafo.getModel().endUpdate();
             return novaAresta;
         }
         return null;
     }
 
-    private static void reorganizaLayout(InterfacePrincipal i) {
+    private void reorganizaLayout() {
         mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(i.getPainel());
         novaOrganizacao.setMinDistanceLimit(0.02);
         novaOrganizacao.execute(i.getPainel().getDefaultParent());
     }
 
-    public static void removeCelula(InterfacePrincipal i) {
+    public void removeCelula() {
         mxCell celula = celulaSelecionada2 == null ? celulaSelecionada1 : celulaSelecionada2;
         if (celula != null) {
             i.getPainel().getModel().beginUpdate();
             if (celula.isEdge()) {
-                removeAresta(i, celula);
+                removeAresta(celula);
                 i.getPainel().getModel().endUpdate();
                 i.exibeMensagem("Aresta removida com sucesso!");
             }
             else if (celula.isVertex()) {
-                removeArestasDeVertice(i, celula);
-                removeVertice(i, celula);
+                removeArestasDeVertice(celula);
+                removeVertice(celula);
                 i.getPainel().getModel().endUpdate();
                 i.exibeMensagem("Vértice removido com sucesso!");
                 //String nomeCelula = (String) celula.getValue();
@@ -151,7 +167,7 @@ public final class Controlador {
         celulaSelecionada1 = celulaSelecionada2 = null;
     }
 
-    private static mxCell removeAresta(InterfacePrincipal i, mxCell aresta) {
+    private mxCell removeAresta(mxCell aresta) {
         mxCell removida = (mxCell) i.getPainel().getModel().remove(aresta);
         for (String identificador : listaArestas.keySet()) {
             if (listaArestas.get(identificador).equals(removida)) {
@@ -161,7 +177,7 @@ public final class Controlador {
         return null;
     }
 
-    private static mxCell removeVertice(InterfacePrincipal i, mxCell vertice) {
+    private mxCell removeVertice(mxCell vertice) {
         mxCell removido = (mxCell) i.getPainel().getModel().remove(vertice);
         Principal.removeVertice((String) removido.getValue());
         listaVertices.remove((String) removido.getValue());
@@ -171,7 +187,7 @@ public final class Controlador {
         return removido;
     }
 
-    private static void removeArestasDeVertice(InterfacePrincipal i, mxCell vertice) {
+    private void removeArestasDeVertice(mxCell vertice) {
         if (Principal.removeAresta((String) vertice.getValue())) {
             while (vertice.getEdgeCount() > 0) {
                 i.getPainel().getModel().remove(vertice.getEdgeAt(0)); //Removendo sempre a primeira aresta do vértice
@@ -179,19 +195,19 @@ public final class Controlador {
         }
     }
 
-    public static void exportaConfiguracoes(InterfacePrincipal padrao) {
-        String diretorio = padrao.selecionaDiretorioSalvamento();
+    public void exportaConfiguracoes() {
+        String diretorio = i.selecionaDiretorioSalvamento();
         if (diretorio != null) {
             try {
                 Principal.salvaArquivoConfiguracao(diretorio);
-                padrao.exibeMensagem("As configurações foram salvas com sucesso!");
+                i.exibeMensagem("As configurações foram salvas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
-                padrao.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
+                i.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
             }
         }
         else {
-            padrao.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
+            i.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
         }
     }
 
@@ -199,7 +215,7 @@ public final class Controlador {
         return nome1 + "\n" + nome2;
     }
 
-    public static void cliqueEsquerdo(InterfacePrincipal i, int x, int y) {
+    public void cliqueEsquerdo(int x, int y) {
         mxCell selecionada = (mxCell) i.getAreaComponentes().getCellAt(x, y);
 
         if (selecionada == null) {
@@ -207,7 +223,7 @@ public final class Controlador {
         }
         else if (selecionada.isEdge()) {
             celulaSelecionada1 = celulaSelecionada2 = null;
-            removeSelecao(i, x, y);
+            removeSelecao(x, y);
         }
         else {
             if (celulaSelecionada1 == null) {
@@ -264,12 +280,12 @@ public final class Controlador {
         atualizaDistanciaEuclidiana(i);
     }
 
-    public static void removeSelecao(InterfacePrincipal i, int x, int y) {
+    public void removeSelecao(int x, int y) {
         mxCell selecionada = (mxCell) i.getAreaComponentes().getCellAt(x, y);
         i.getPainel().removeSelectionCell(selecionada);
     }
 
-    public static void importaConfiguracoes(InterfacePrincipal i) {
+    public void importaConfiguracoes() {
         String diretorio = i.selecionaDiretorioAbertura();
         if (diretorio != null) {
             try {
@@ -286,7 +302,7 @@ public final class Controlador {
         }
     }
 
-    private static void trasfereModelParaInterface(InterfacePrincipal i, Grafo grafo) {
+    private void trasfereModelParaInterface(InterfacePrincipal i, Grafo grafo) {
         LinkedList<Vertice> vertices = grafo.getVertices();
         for (int j = 0; j < vertices.size(); j++) {
             Vertice verticeAtual = vertices.get(j);
@@ -294,7 +310,7 @@ public final class Controlador {
             if (!"Internet".equalsIgnoreCase(verticeAtual.getNome())) {
                 tipoVertice = verticeAtual.isTerminal() ? "computador" : "rooteador";
             }
-            insereVerticeInterface(i, verticeAtual.getNome(), tipoVertice);
+            insereVerticeInterface(verticeAtual.getNome(), tipoVertice);
         }
 
         for (int j = 0; j < vertices.size(); j++) {
@@ -304,12 +320,12 @@ public final class Controlador {
                 Aresta arestaAtual = arestas.get(k);
                 String nomeVerticeDestino = arestaAtual.getFim().getNome();
                 int pesoArestaAtual = arestaAtual.getPeso();
-                insereArestaInterface(i, verticeAtual.getNome(), nomeVerticeDestino, pesoArestaAtual + "");
+                insereArestaInterface(verticeAtual.getNome(), nomeVerticeDestino, pesoArestaAtual + "");
             }
         }
     }
 
-    public static void defineZoom(InterfacePrincipal i, int rotacaoRoda, boolean ctrlPressionado) {
+    public void defineZoom(InterfacePrincipal i, int rotacaoRoda, boolean ctrlPressionado) {
         if (ctrlPressionado) {
             if (rotacaoRoda > 0) {
                 i.getAreaComponentes().zoomOut();
@@ -322,7 +338,7 @@ public final class Controlador {
         }
     }
 
-    private static void atualizaDistanciaEuclidiana(InterfacePrincipal i) {
+    private void atualizaDistanciaEuclidiana(InterfacePrincipal i) {
         String coordenada1, coordenada2, distanciaE;
         if (xA == Integer.MIN_VALUE) {
             coordenada1 = coordenada2 = distanciaE = "";
@@ -344,7 +360,7 @@ public final class Controlador {
         i.exibeNovaDistanciaEuclidiana(coordenada1, coordenada2, distanciaE);
     }
 
-    private static void destacaCaminhosInterface(InterfacePrincipal i, LinkedList<Vertice> caminhos) {
+    private void destacaCaminhosInterface(InterfacePrincipal i, LinkedList<Vertice> caminhos) {
         listaCaminhos = new LinkedList();
         for (int j = 0; j < caminhos.size(); j++) {
             Vertice verticeAtual = caminhos.get(j);
@@ -352,7 +368,7 @@ public final class Controlador {
         }
     }
 
-    private static void destacaAntecessores(InterfacePrincipal i, Vertice verticeAtual) {
+    private void destacaAntecessores(InterfacePrincipal i, Vertice verticeAtual) {
         while (verticeAtual != null) {
             mxCell verticeEncontrado = listaVertices.get(verticeAtual.getNome());
             extendeCaminho(verticeEncontrado);
@@ -365,13 +381,13 @@ public final class Controlador {
         i.getPainel().setSelectionCells(listaCaminhos);
     }
 
-    private static void extendeCaminho(mxCell novaCelula) {
+    private void extendeCaminho(mxCell novaCelula) {
         if (!listaCaminhos.contains(novaCelula)) {
             listaCaminhos.add(novaCelula);
         }
     }
 
-    public static void defineItemSelecionado(String aparelhoSelecionado) {
+    public void defineItemSelecionado(String aparelhoSelecionado) {
         tipo_aparelho = aparelhoSelecionado;
     }
 }
