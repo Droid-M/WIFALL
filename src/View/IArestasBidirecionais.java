@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package View;
 
 import com.mxgraph.util.mxConstants;
@@ -10,10 +5,6 @@ import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import java.util.HashMap;
 
-/**
- *
- * @author Marcos
- */
 public class IArestasBidirecionais {
 
     public IArestasBidirecionais(mxGraph grafo) {

@@ -2,6 +2,8 @@ package Control;
 
 import DAO.Grafo;
 import Model.Aresta;
+import Model.Arquivo;
+import Model.Dijkstra;
 import Model.Vertice;
 import Observer.ActionEventListenerAdicionaVertice;
 import Observer.ActionEventListenerConectaVertices;
@@ -26,13 +28,13 @@ import java.util.regex.Pattern;
 public class Controlador {
 
     private final int altura_vertice_Rooteador = 30;
-    private String tipo_aparelho = "computador";
     private final int largura_vertice_Rooteador = 50;
     private final int altura_vertice_Computador = 60;
     private final int largura_vertice_Computador = 100;
     private final int altura_vertice_Internet = 90;
     private final int largura_vertice_Internet = 200;
-    private final String estilo_aresta = "ArestasBidirecionais";
+
+    private String tipo_aparelho = "computador";
     private mxCell primeiroVertice;
     private mxCell celulaSelecionada1;
     private mxCell celulaSelecionada2;
@@ -43,6 +45,7 @@ public class Controlador {
     private HashMap<String, mxCell> listaVertices = new HashMap();
 
     private InterfacePrincipal interfaceI;
+    private Grafo grafo = new Grafo();
 
     public Controlador() {
         interfaceI = new InterfacePrincipal(new ActionEventListenerRemove(this), new ActionEventListenerSaida(this),
@@ -55,11 +58,12 @@ public class Controlador {
     public void adicionaVertice() {
         String tipoVertice = tipo_aparelho;
         String nomeVertice = interfaceI.recebeNomeVertice();
-        Pattern pattern = Pattern.compile("\\w");
-        Matcher matcher = pattern.matcher(nomeVertice);
-        if (nomeVertice != null && matcher.find()) {
-            System.out.println(nomeVertice);
-            if (!Principal.adicionaVertice(nomeVertice, tipoVertice)) {
+        Pattern conjuntoBits = Pattern.compile("\\w");
+        Matcher buscadorBits = conjuntoBits.matcher(nomeVertice);
+
+        if (nomeVertice != null && buscadorBits.find()) {
+            Vertice novo = new Vertice(nomeVertice, tipoVertice.equalsIgnoreCase("computador"));
+            if (!grafo.adicionaVertice(novo)) {
                 interfaceI.exibeMensagem("O vértice '" + nomeVertice + "' não será adicionado porque já existe no sistema!");
             }
             else {
@@ -87,7 +91,9 @@ public class Controlador {
             return;
         }
         int pesoLigacao = Integer.parseInt(informacoes[2]);
-        if (!Principal.estabeleceNovaLigacao(informacoes[0], informacoes[1], pesoLigacao)
+        Vertice v1 = grafo.buscaVertice(informacoes[0]);
+        Vertice v2 = grafo.buscaVertice(informacoes[1]);
+        if (!grafo.adicionaArestaDupla(pesoLigacao, v1, v2)
                 || insereArestaInterface(informacoes[0], informacoes[1], informacoes[2]) == null) {
             interfaceI.exibeMensagem("Aresta não adicionada! Verifique a existência dos vértices informados e de suas ligações!");
         }
@@ -96,28 +102,23 @@ public class Controlador {
     private mxCell insereVerticeInterface(String nomeVertice, String tipoVertice) {
         mxCell novoVertice = null;
         if (listaVertices.get(nomeVertice) == null) {
-            mxGraph grafo = interfaceI.getPainel();
-            Object pai = grafo.getDefaultParent();
-            grafo.getModel().beginUpdate();
             if (tipoVertice.equalsIgnoreCase("internet")) {
-                novoVertice = (mxCell) grafo.insertVertex(pai, nomeVertice, nomeVertice, 300, 50, largura_vertice_Internet, altura_vertice_Internet, tipoVertice);
+                novoVertice = interfaceI.adicionaVertice(nomeVertice, largura_vertice_Internet, altura_vertice_Internet, tipoVertice);
             }
             else if (tipoVertice.equalsIgnoreCase("computador")) {
-                novoVertice = (mxCell) grafo.insertVertex(pai, nomeVertice, nomeVertice, 300, 50, largura_vertice_Computador, altura_vertice_Computador, tipoVertice);
+                novoVertice = interfaceI.adicionaVertice(nomeVertice, largura_vertice_Computador, altura_vertice_Computador, tipoVertice);
             }
             else if (tipoVertice.equalsIgnoreCase("rooteador")) {
-                novoVertice = (mxCell) grafo.insertVertex(pai, nomeVertice, nomeVertice, 300, 50, largura_vertice_Rooteador, altura_vertice_Rooteador, tipoVertice);
+                novoVertice = interfaceI.adicionaVertice(nomeVertice, largura_vertice_Rooteador, altura_vertice_Rooteador, tipoVertice);
             }
             listaVertices.put(nomeVertice, novoVertice);
             if (!listaVertices.isEmpty() && primeiroVertice != null) {
-                mxCell novaAresta = (mxCell) grafo.insertEdge(pai, "", "", primeiroVertice, novoVertice, estilo_aresta);
-                reorganizaLayout();
+                mxCell novaAresta = interfaceI.adicionaAresta("", primeiroVertice, novoVertice);
                 novaAresta.setVisible(false);
             }
             else {
                 primeiroVertice = novoVertice;
             }
-            grafo.getModel().endUpdate();
             return novoVertice;
         }
         return null;
@@ -126,37 +127,19 @@ public class Controlador {
     private mxCell insereArestaInterface(String nomeVertice1, String nomeVertice2, String nomeAresta) {
         if (listaArestas.get(criaIdentificador(nomeVertice1, nomeVertice2)) == null
                 && listaArestas.get(criaIdentificador(nomeVertice2, nomeVertice1)) == null) {
-
-            mxGraph grafo = interfaceI.getPainel();
-            Object pai = grafo.getDefaultParent();
             mxCell vertice1 = listaVertices.get(nomeVertice1);
             mxCell vertice2 = listaVertices.get(nomeVertice2);
-            grafo.getModel().beginUpdate();
-            mxCell novaAresta = (mxCell) grafo.insertEdge(pai, nomeAresta, nomeAresta, vertice1, vertice2, estilo_aresta);
+            mxCell novaAresta = interfaceI.adicionaAresta(nomeAresta, vertice1, vertice2);
             listaArestas.put(criaIdentificador(nomeVertice1, nomeVertice2), novaAresta);
-            reorganizaLayout();
-            grafo.getModel().endUpdate();
             return novaAresta;
         }
         return null;
     }
 
-    private void reorganizaLayout() {
-        mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(interfaceI.getPainel());
-        novaOrganizacao.setMinDistanceLimit(0.02);
-        novaOrganizacao.execute(interfaceI.getPainel().getDefaultParent());
-    }
-
     public void removeCelula() {
         mxCell celula = celulaSelecionada2 == null ? celulaSelecionada1 : celulaSelecionada2;
         if (celula != null) {
-            interfaceI.getPainel().getModel().beginUpdate();
-            if (celula.isEdge()) {
-                removeAresta(celula);
-                interfaceI.getPainel().getModel().endUpdate();
-                interfaceI.exibeMensagem("Aresta removida com sucesso!");
-            }
-            else if (celula.isVertex()) {
+            if (celula.isVertex()) {
                 removeArestasDeVertice(celula);
                 removeVertice(celula);
                 interfaceI.getPainel().getModel().endUpdate();
@@ -168,6 +151,7 @@ public class Controlador {
         celulaSelecionada1 = celulaSelecionada2 = null;
     }
 
+    /*
     private mxCell removeAresta(mxCell aresta) {
         mxCell removida = (mxCell) interfaceI.getPainel().getModel().remove(aresta);
         for (String identificador : listaArestas.keySet()) {
@@ -177,10 +161,11 @@ public class Controlador {
         }
         return null;
     }
-
+TALVEZ NAO PRECISE MAIS DESSE METODO
+     */
     private mxCell removeVertice(mxCell vertice) {
-        mxCell removido = (mxCell) interfaceI.getPainel().getModel().remove(vertice);
-        Principal.removeVertice((String) removido.getValue());
+        mxCell removido = interfaceI.removeCelula(vertice);
+        grafo.removeVertice((String) removido.getValue());
         listaVertices.remove((String) removido.getValue());
         if (listaVertices.isEmpty()) {
             primeiroVertice = null;
@@ -188,11 +173,13 @@ public class Controlador {
         return removido;
     }
 
-    private void removeArestasDeVertice(mxCell vertice) {
-        if (Principal.removeAresta((String) vertice.getValue())) {
-            while (vertice.getEdgeCount() > 0) {
-                interfaceI.getPainel().getModel().remove(vertice.getEdgeAt(0)); //Removendo sempre a primeira aresta do vértice
-            }
+    private void removeArestasDeVertice(mxCell vertex) {
+        Vertice verticeBuscados = grafo.buscaVertice((String) vertex.getValue());
+        LinkedList<Aresta> listaAdjacentes = verticeBuscados.getArestas();
+        while (vertex.getEdgeCount() > 0) {
+            Vertice verticeAdjacente = listaAdjacentes.get(0).getFim();
+            grafo.removeAresta(verticeBuscados.getNome(), verticeAdjacente.getNome());
+            interfaceI.removeCelula(vertex.getEdgeAt(0));
         }
     }
 
@@ -200,7 +187,7 @@ public class Controlador {
         String diretorio = interfaceI.selecionaDiretorioSalvamento();
         if (diretorio != null) {
             try {
-                Principal.salvaArquivoConfiguracao(diretorio);
+                Arquivo.trasfereParaArquivo(diretorio, grafo);
                 interfaceI.exibeMensagem("As configurações foram salvas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
@@ -223,49 +210,31 @@ public class Controlador {
             celulaSelecionada1 = celulaSelecionada2 = null;
         }
         else if (selecionada.isEdge()) {
+            removeSelecao(selecionada);
             celulaSelecionada1 = celulaSelecionada2 = null;
-            removeSelecao(x, y);
         }
         else {
             if (celulaSelecionada1 == null) {
                 celulaSelecionada1 = selecionada;
                 if (selecionada.isVertex()) {
-                    LinkedList<Vertice> caminhos = Principal.identificaCaminhos((String) selecionada.getValue(), false);
-                    destacaCaminhosInterface(interfaceI, caminhos);
+                    LinkedList<Vertice> caminhos = obtemMenoresCaminhos(((String) selecionada.getValue()), false);
+                    destacaCaminhosInterface(caminhos);
                 }
             }
             else {
                 if (celulaSelecionada1.equals(selecionada)) {
-                    celulaSelecionada1 = null;
-                    interfaceI.getPainel().setSelectionCell(celulaSelecionada1);
                 }
                 else if (celulaSelecionada2 == null) {
                     celulaSelecionada2 = selecionada;
-                    LinkedList<Vertice> caminhos = Principal.identificaCaminhos((String) celulaSelecionada1.getValue(), true);
+                    LinkedList<Vertice> caminhos = obtemMenoresCaminhos((String) celulaSelecionada1.getValue(), true);
                     if (caminhos != null) {
-                        Vertice v1, v2;
-                        v1 = v2 = null;
-                        for (int j = 0; j < caminhos.size(); j++) {
-                            Vertice verticeAtual = caminhos.get(j);
-                            if (verticeAtual.getNome().equals(celulaSelecionada2.getValue())) {
-                                v2 = verticeAtual;
-                            }
-                            else if (verticeAtual.getNome().equals(celulaSelecionada1.getValue())) {
-                                v1 = verticeAtual;
-                            }
-                            if (v1 != null && v2 != null) {
-                                if (v1.isTerminal() && v2.isTerminal()) {
-                                    listaCaminhos = new LinkedList();
-                                    destacaAntecessores(interfaceI, verticeAtual);
-                                    break;
-                                }
-                            }
-                        }
+                        iniciaVerreduraSelecao(caminhos);
                     }
                 }
                 else {
                     celulaSelecionada1 = selecionada;
-                    interfaceI.getPainel().setSelectionCell(celulaSelecionada1);
+                    LinkedList<Vertice> caminhos = obtemMenoresCaminhos(((String) selecionada.getValue()), false);
+                    destacaCaminhosInterface(caminhos);
                     celulaSelecionada2 = null;
                 }
             }
@@ -278,11 +247,10 @@ public class Controlador {
             xB = x;
             yB = y;
         }
-        atualizaDistanciaEuclidiana(interfaceI);
+        atualizaDistanciaEuclidiana();
     }
 
-    public void removeSelecao(int x, int y) {
-        mxCell selecionada = (mxCell) interfaceI.getAreaComponentes().getCellAt(x, y);
+    public void removeSelecao(mxCell selecionada) {
         interfaceI.getPainel().removeSelectionCell(selecionada);
     }
 
@@ -290,8 +258,8 @@ public class Controlador {
         String diretorio = interfaceI.selecionaDiretorioAbertura();
         if (diretorio != null) {
             try {
-                Principal.leArquivoConfiguacao(diretorio);
-                trasfereModelParaInterface(Principal.getGrafo());
+                principal.leArquivoConfiguacao(diretorio);
+                trasfereModelParaInterface(principal.getGrafo());
                 interfaceI.exibeMensagem("Suas configurações foram importadas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
@@ -339,7 +307,7 @@ public class Controlador {
         }
     }
 
-    private void atualizaDistanciaEuclidiana(InterfacePrincipal i) {
+    private void atualizaDistanciaEuclidiana() {
         String coordenada1, coordenada2, distanciaE;
         if (xA == Integer.MIN_VALUE) {
             coordenada1 = coordenada2 = distanciaE = "";
@@ -358,18 +326,18 @@ public class Controlador {
                 xA = xB = Integer.MIN_VALUE;
             }
         }
-        i.exibeNovaDistanciaEuclidiana(coordenada1, coordenada2, distanciaE);
+        interfaceI.exibeNovaDistanciaEuclidiana(coordenada1, coordenada2, distanciaE);
     }
 
-    private void destacaCaminhosInterface(InterfacePrincipal i, LinkedList<Vertice> caminhos) {
+    private void destacaCaminhosInterface(LinkedList<Vertice> caminhos) {
         listaCaminhos = new LinkedList();
         for (int j = 0; j < caminhos.size(); j++) {
             Vertice verticeAtual = caminhos.get(j);
-            destacaAntecessores(i, verticeAtual);
+            destacaAntecessores(verticeAtual);
         }
     }
 
-    private void destacaAntecessores(InterfacePrincipal i, Vertice verticeAtual) {
+    private void destacaAntecessores(Vertice verticeAtual) {
         while (verticeAtual != null) {
             mxCell verticeEncontrado = listaVertices.get(verticeAtual.getNome());
             extendeCaminho(verticeEncontrado);
@@ -379,7 +347,7 @@ public class Controlador {
             }
             verticeAtual = verticeAtual.getVerticeAntecessor();
         }
-        i.getPainel().setSelectionCells(listaCaminhos);
+        interfaceI.getPainel().setSelectionCells(listaCaminhos);
     }
 
     private void extendeCaminho(mxCell novaCelula) {
@@ -390,5 +358,36 @@ public class Controlador {
 
     public void defineItemSelecionado() {
         tipo_aparelho = interfaceI.getConteudoCombobox();
+    }
+
+    private LinkedList<Vertice> obtemMenoresCaminhos(String nomeVertice, boolean apenasTerminal) {
+        Dijkstra d = new Dijkstra();
+        Vertice buscado = grafo.buscaVertice(nomeVertice);
+        Grafo gerado = (!apenasTerminal || buscado.isTerminal()) ? d.obtemMenoresCaminhos(buscado, grafo) : null;
+        if (gerado == null) {
+            return null;
+        }
+        return gerado.getVertices();
+    }
+
+    private void iniciaVerreduraSelecao(LinkedList<Vertice> caminhos) {
+        Vertice v1, v2;
+        v1 = v2 = null;
+        for (int j = 0; j < caminhos.size(); j++) {
+            Vertice verticeAtual = caminhos.get(j);
+            if (verticeAtual.getNome().equals(celulaSelecionada2.getValue())) {
+                v2 = verticeAtual;
+            }
+            else if (verticeAtual.getNome().equals(celulaSelecionada1.getValue())) {
+                v1 = verticeAtual;
+            }
+            if (v1 != null && v2 != null) {
+                if (v1.isTerminal() && v2.isTerminal()) {
+                    listaCaminhos = new LinkedList();
+                    destacaAntecessores(verticeAtual);
+                    break;
+                }
+            }
+        }
     }
 }

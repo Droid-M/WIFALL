@@ -18,7 +18,7 @@ public class Dijkstra {
     private Grafo distanciaS; //Lista de vértices depois de passar pelo Dijkstra
     private LinkedList <Vertice> listaVisitados;
 
-    public Grafo dijkstra(Vertice pontoPartida, Grafo conjuntoVertices) {
+    public Grafo obtemMenoresCaminhos(Vertice pontoPartida, Grafo conjuntoVertices) {
         if (conjuntoVertices.estaVazio()) {
             return null;
         }

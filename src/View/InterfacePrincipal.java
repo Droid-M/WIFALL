@@ -4,6 +4,9 @@
  */
 package View;
 
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxICell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import java.awt.Color;
@@ -27,12 +30,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class InterfacePrincipal extends JFrame {
 
     private final String extensao_padrao = "txt";
+    private final String estilo_aresta = "ArestasBidirecionais";
     private final String texto_distancia = "Distância euclidiana: ";
     private final String texto_coordenada1 = "Coordenada 1: ";
     private final String texto_coordenada2 = "Coordenada 2: ";
+    private final int posicao_X = 300;
+    private final int posicao_Y = 50;
 
-    private mxGraph graph;
-    private mxGraphComponent mxComp;
+    private mxGraph grafo;
+    private mxGraphComponent areaCompGrafo;
     private JTextField caixaTexto;
     private JButton botaoAdd;
     private JButton botaoDel;
@@ -70,10 +76,10 @@ public class InterfacePrincipal extends JFrame {
 
         this.iniciaGUI();
         //Inicializando os componentes gráficos correspondentes aos vértices:
-        new IComputador(this.graph);
-        new IRooteador(this.graph);
-        new IInternet(this.graph);
-        new IArestasBidirecionais(this.graph);
+        new IComputador(this.grafo);
+        new IRooteador(this.grafo);
+        new IInternet(this.grafo);
+        new IArestasBidirecionais(this.grafo);
     }
 
     public final void iniciaGUI() {
@@ -83,12 +89,12 @@ public class InterfacePrincipal extends JFrame {
         setSize(largura, altura); //Define a resolução da janela
 
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        graph = new mxGraph(); //Cria um novo painel
-        mxComp = new mxGraphComponent(graph); //Cria a área onde ficarão os componentes do grafo
+        grafo = new mxGraph(); //Cria um novo painel
+        areaCompGrafo = new mxGraphComponent(grafo); //Cria a área onde ficarão os componentes do grafo
         Dimension dimensao = new Dimension((int) (largura * 0.90), (int) (altura * 0.75)); //Define a dimensão para a área dos componentes do grafo
-        mxComp.setPreferredSize(dimensao);
-        this.getContentPane().add(mxComp); //Adicina a área de componentes do grafo ao painel da janela principal
-        mxComp.setImportEnabled(true); //Permite a importação de imagens para o sistema (talvez seja desnecessário futuramente mas coloquei por precaução)
+        areaCompGrafo.setPreferredSize(dimensao);
+        this.getContentPane().add(areaCompGrafo); //Adicina a área de componentes do grafo ao painel da janela principal
+        areaCompGrafo.setImportEnabled(true); //Permite a importação de imagens para o sistema (talvez seja desnecessário futuramente mas coloquei por precaução)
 
         this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS)); //Altera o layout (organização dos componentes)
         this.add(painelLinha1());
@@ -96,13 +102,13 @@ public class InterfacePrincipal extends JFrame {
         this.add(painelLinha3());
         this.pack(); //Compacta os espaços entre os componentes da janela para otimizar o espaço
 
-        mxComp.setConnectable(false);
-        mxComp.setSwimlaneSelectionEnabled(true);
-        mxComp.setSwimlaneSelectionEnabled(true);
-        mxComp.setFocusable(false);
+        areaCompGrafo.setConnectable(false);
+        areaCompGrafo.setSwimlaneSelectionEnabled(true);
+        areaCompGrafo.setSwimlaneSelectionEnabled(true);
+        areaCompGrafo.setFocusable(false);
 
-        mxComp.setBackground(Color.WHITE);
-        mxComp.getViewport().setOpaque(false);
+        areaCompGrafo.setBackground(Color.WHITE);
+        areaCompGrafo.getViewport().setOpaque(false);
 
         defineAcoesMouse();
         this.setLocationRelativeTo(null); //Posiciona a janela no centro da tela
@@ -110,7 +116,7 @@ public class InterfacePrincipal extends JFrame {
     }
 
     public mxGraph getPainel() {
-        return this.graph;
+        return this.grafo;
     }
 
     public JTextField getCaixatexto() {
@@ -118,7 +124,7 @@ public class InterfacePrincipal extends JFrame {
     }
 
     public mxGraphComponent getAreaComponentes() {
-        return this.mxComp;
+        return this.areaCompGrafo;
     }
 
     public String recebeNomeVertice() {
@@ -224,16 +230,45 @@ public class InterfacePrincipal extends JFrame {
     }
 
     private void defineAcoesMouse() {
-        mxComp.getGraphControl().addMouseListener(eventoCliqueMouse);
-        mxComp.addMouseWheelListener(eventoRodaMouse);
+        areaCompGrafo.getGraphControl().addMouseListener(eventoCliqueMouse);
+        areaCompGrafo.addMouseWheelListener(eventoRodaMouse);
     }
 
     private void defineIcone() {
         ImageIcon novoIcone = new ImageIcon("icone.png");
         this.setIconImage(novoIcone.getImage());
     }
-    
+
     public String getConteudoCombobox() {
         return (String) selecaoAparelho.getSelectedItem();
+    }
+
+    public mxCell adicionaVertice(String nomeVertice, int larguraVertice, int alturaVertice, String tipoVertice) {
+        grafo.getModel().beginUpdate();
+        mxCell novoVertice = (mxCell) grafo.insertVertex(grafo.getDefaultParent(), nomeVertice, nomeVertice, this.posicao_X, this.posicao_Y, larguraVertice, alturaVertice, tipoVertice);
+        reorganizaLayout();
+        grafo.getModel().endUpdate();
+        return novoVertice;
+    }
+
+    public mxCell adicionaAresta(String pesoAresta, mxCell vertice1, mxCell vertice2) {
+        grafo.getModel().beginUpdate();
+        mxCell novaAresta = (mxCell) grafo.insertEdge(grafo.getDefaultParent(), pesoAresta, pesoAresta, vertice1, vertice2, estilo_aresta);
+        reorganizaLayout();
+        grafo.getModel().endUpdate();
+        return novaAresta;
+    }
+
+    private void reorganizaLayout() {
+        mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(grafo);
+        novaOrganizacao.setMinDistanceLimit(0.02);
+        novaOrganizacao.execute(grafo.getDefaultParent());
+    }
+
+    public mxCell removeCelula(mxICell celula) {
+        grafo.getModel().beginUpdate();
+        mxCell removida = (mxCell) grafo.getModel().remove(celula);
+        grafo.getModel().endUpdate();
+        return removida;
     }
 }
