@@ -9,8 +9,6 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import java.util.Hashtable;
-import java.util.Map;
-import javafx.scene.paint.Color;
 
 /**
  *
