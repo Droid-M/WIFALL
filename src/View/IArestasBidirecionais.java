@@ -8,7 +8,7 @@ package View;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  *
@@ -19,7 +19,7 @@ public class IArestasBidirecionais {
     public IArestasBidirecionais(mxGraph grafo) {
         mxStylesheet stylesheet = grafo.getStylesheet();
         String nomeEstilo = "ArestasBidirecionais";
-        Hashtable<String, Object> estilo = new Hashtable();
+        HashMap<String, Object> estilo = new HashMap();
         estilo.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
         estilo.put(mxConstants.STYLE_STARTARROW, mxConstants.NONE);
         estilo.put(mxConstants.STYLE_STARTARROW, mxConstants.NONE);
