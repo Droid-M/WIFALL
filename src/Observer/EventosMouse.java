@@ -6,30 +6,22 @@
 package Observer;
 
 import Control.Controlador;
-import View.InterfacePrincipal;
-import com.mxgraph.model.mxCell;
-import com.mxgraph.swing.mxGraphComponent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 public class EventosMouse extends MouseAdapter {
-
-    public EventosMouse(Controlador aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public EventosMouse(Controlador aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+Controlador padrao;
+    public EventosMouse(Controlador novo) {
+this.padrao = novo;
     }
 
     @Override
     public void mouseClicked(MouseEvent clique) {
-        Controlador.cliqueEsquerdo(clique.getX(), clique.getY());
+        padrao.cliqueEsquerdo(clique.getX(), clique.getY());
     }
 
     @Override
     public void mousePressed(MouseEvent clique) {
-        Controlador.removeSelecao(clique.getX(), clique.getY());
+        padrao.removeSelecao(clique.getX(), clique.getY());
     }
 }

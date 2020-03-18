@@ -50,6 +50,7 @@ public class InterfacePrincipal extends JFrame {
     private ActionListener eventoLigar;
     private ActionListener eventoItem;
     private ActionListener eventoAdicionar;
+    private JComboBox selecaoAparelho;
 
     public InterfacePrincipal(ActionListener eventoRemover, ActionListener eventoSair,
             ActionListener eventoExportar, ActionListener eventoImportar, ActionListener eventoLigar,
@@ -105,6 +106,7 @@ public class InterfacePrincipal extends JFrame {
 
         defineAcoesMouse();
         this.setLocationRelativeTo(null); //Posiciona a janela no centro da tela
+        this.setVisible(true);
     }
 
     public mxGraph getPainel() {
@@ -203,7 +205,7 @@ public class InterfacePrincipal extends JFrame {
         painel3.add(selecioneItem);
 
         String[] aparelhos = {"computador", "internet", "rooteador"};
-        JComboBox selecaoAparelho = new JComboBox(aparelhos);
+        selecaoAparelho = new JComboBox(aparelhos);
         selecaoAparelho.setSelectedIndex(0);
         selecaoAparelho.addActionListener(eventoItem);
 
@@ -229,5 +231,9 @@ public class InterfacePrincipal extends JFrame {
     private void defineIcone() {
         ImageIcon novoIcone = new ImageIcon("icone.png");
         this.setIconImage(novoIcone.getImage());
+    }
+    
+    public String getConteudoCombobox() {
+        return (String) selecaoAparelho.getSelectedItem();
     }
 }

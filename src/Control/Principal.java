@@ -24,7 +24,7 @@ public final class Principal {
     private static Dijkstra d = new Dijkstra();
 
     public static void main(String[] args) {
-        nova.setVisible(true);
+        new Controlador();
     }
 
     public static boolean adicionaVertice(String nomeVertice, String tipoVertice) {

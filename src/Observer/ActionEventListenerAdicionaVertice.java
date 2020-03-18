@@ -15,18 +15,14 @@ import java.awt.event.ActionListener;
  * @author Marcos
  */
 public class ActionEventListenerAdicionaVertice implements ActionListener {
-
-    public ActionEventListenerAdicionaVertice(Controlador aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public ActionEventListenerAdicionaVertice(Controlador aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+Controlador padrao;
+    public ActionEventListenerAdicionaVertice(Controlador novo) {
+        this.padrao = novo;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        Controlador.adicionaVertice();
+        padrao.adicionaVertice();
     }
 
 }

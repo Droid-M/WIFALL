@@ -49,6 +49,7 @@ public class Controlador {
                 new ActionEventListenerExportaGrafo(this), new ActionEventListenerImportaGrafo(this),
                 new ActionEventListenerConectaVertices(this), new ActionEventListenerSelecionaAparelho(this),
                 new ActionEventListenerAdicionaVertice(this), new EventosMouse(this), new ActionEventListenerRolagemMouse(this));
+        i.setVisible(true);
     }
 
     public void adicionaVertice() {
@@ -290,7 +291,7 @@ public class Controlador {
         if (diretorio != null) {
             try {
                 Principal.leArquivoConfiguacao(diretorio);
-                trasfereModelParaInterface(i, Principal.getGrafo());
+                trasfereModelParaInterface(Principal.getGrafo());
                 i.exibeMensagem("Suas configurações foram importadas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
@@ -302,7 +303,7 @@ public class Controlador {
         }
     }
 
-    private void trasfereModelParaInterface(InterfacePrincipal i, Grafo grafo) {
+    private void trasfereModelParaInterface(Grafo grafo) {
         LinkedList<Vertice> vertices = grafo.getVertices();
         for (int j = 0; j < vertices.size(); j++) {
             Vertice verticeAtual = vertices.get(j);
@@ -325,7 +326,7 @@ public class Controlador {
         }
     }
 
-    public void defineZoom(InterfacePrincipal i, int rotacaoRoda, boolean ctrlPressionado) {
+    public void defineZoom(int rotacaoRoda, boolean ctrlPressionado) {
         if (ctrlPressionado) {
             if (rotacaoRoda > 0) {
                 i.getAreaComponentes().zoomOut();
@@ -387,7 +388,7 @@ public class Controlador {
         }
     }
 
-    public void defineItemSelecionado(String aparelhoSelecionado) {
-        tipo_aparelho = aparelhoSelecionado;
+    public void defineItemSelecionado() {
+        tipo_aparelho = i.getConteudoCombobox();
     }
 }
