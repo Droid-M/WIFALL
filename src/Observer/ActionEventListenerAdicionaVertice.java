@@ -6,7 +6,6 @@
 package Observer;
 
 import Control.Controlador;
-import View.InterfacePrincipal;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

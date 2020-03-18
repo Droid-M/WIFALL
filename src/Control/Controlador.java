@@ -25,78 +25,78 @@ import java.util.regex.Pattern;
 
 public class Controlador {
 
-    private final static int altura_vertice_Rooteador = 30;
-    private static String tipo_aparelho = "computador";
-    private final static int largura_vertice_Rooteador = 50;
-    private final static int altura_vertice_Computador = 60;
-    private final static int largura_vertice_Computador = 100;
-    private final static int altura_vertice_Internet = 90;
-    private final static int largura_vertice_Internet = 200;
-    private final static String estilo_aresta = "ArestasBidirecionais";
-    private static mxCell primeiroVertice;
-    private static mxCell celulaSelecionada1;
-    private static mxCell celulaSelecionada2;
-    private static int xA = Integer.MIN_VALUE, xB = Integer.MIN_VALUE, yA, yB;
-    private static Collection<Object> listaCaminhos = new LinkedList();
+    private final int altura_vertice_Rooteador = 30;
+    private String tipo_aparelho = "computador";
+    private final int largura_vertice_Rooteador = 50;
+    private final int altura_vertice_Computador = 60;
+    private final int largura_vertice_Computador = 100;
+    private final int altura_vertice_Internet = 90;
+    private final int largura_vertice_Internet = 200;
+    private final String estilo_aresta = "ArestasBidirecionais";
+    private mxCell primeiroVertice;
+    private mxCell celulaSelecionada1;
+    private mxCell celulaSelecionada2;
+    private int xA = Integer.MIN_VALUE, xB = Integer.MIN_VALUE, yA, yB;
+    private Collection<Object> listaCaminhos = new LinkedList();
 
-    private static HashMap<String, mxCell> listaArestas = new HashMap();
-    private static HashMap<String, mxCell> listaVertices = new HashMap();
+    private HashMap<String, mxCell> listaArestas = new HashMap();
+    private HashMap<String, mxCell> listaVertices = new HashMap();
 
-    private InterfacePrincipal i;
+    private InterfacePrincipal interfaceI;
 
     public Controlador() {
-        i = new InterfacePrincipal(new ActionEventListenerRemove(this), new ActionEventListenerSaida(this),
+        interfaceI = new InterfacePrincipal(new ActionEventListenerRemove(this), new ActionEventListenerSaida(this),
                 new ActionEventListenerExportaGrafo(this), new ActionEventListenerImportaGrafo(this),
                 new ActionEventListenerConectaVertices(this), new ActionEventListenerSelecionaAparelho(this),
                 new ActionEventListenerAdicionaVertice(this), new EventosMouse(this), new ActionEventListenerRolagemMouse(this));
-        i.setVisible(true);
+        interfaceI.setVisible(true);
     }
 
     public void adicionaVertice() {
         String tipoVertice = tipo_aparelho;
-        String nomeVertice = i.recebeNomeVertice();
+        String nomeVertice = interfaceI.recebeNomeVertice();
         Pattern pattern = Pattern.compile("\\w");
         Matcher matcher = pattern.matcher(nomeVertice);
         if (nomeVertice != null && matcher.find()) {
             System.out.println(nomeVertice);
             if (!Principal.adicionaVertice(nomeVertice, tipoVertice)) {
-                i.exibeMensagem("O vértice '" + nomeVertice + "' não será adicionado porque já existe no sistema!");
+                interfaceI.exibeMensagem("O vértice '" + nomeVertice + "' não será adicionado porque já existe no sistema!");
             }
             else {
                 insereVerticeInterface(nomeVertice, tipoVertice);
             }
         }
         else {
-            i.exibeMensagem("Operação interrompida! Nome de vértice informado é inválido!");
+            interfaceI.exibeMensagem("Operação interrompida! Nome de vértice informado é inválido!");
         }
     }
 
     public void adicionaAresta() {
-        String[] informacoes = i.recebeInformacoesLigacao();
+        String[] informacoes = interfaceI.recebeInformacoesLigacao();
         Pattern executor1 = Pattern.compile("\\w");
         Matcher buscador1 = executor1.matcher(informacoes[0]);
         Matcher buscador2 = executor1.matcher(informacoes[1]);
         Pattern executor2 = Pattern.compile("\\D");
         Matcher buscador3 = executor2.matcher(informacoes[2]);
         if (!buscador2.find() || !buscador1.find()) {
-            i.exibeMensagem("Operação interrompida! Nome de vértice informado é inválido!");
+            interfaceI.exibeMensagem("Operação interrompida! Nome de vértice informado é inválido!");
             return;
         }
         if (buscador3.find()) {
-            i.exibeMensagem("Operação interrompida! O valor do peso de ligação fornecido é inválido!");
+            interfaceI.exibeMensagem("Operação interrompida! O valor do peso de ligação fornecido é inválido!");
             return;
         }
         int pesoLigacao = Integer.parseInt(informacoes[2]);
         if (!Principal.estabeleceNovaLigacao(informacoes[0], informacoes[1], pesoLigacao)
                 || insereArestaInterface(informacoes[0], informacoes[1], informacoes[2]) == null) {
-            i.exibeMensagem("Aresta não adicionada! Verifique a existência dos vértices informados e de suas ligações!");
+            interfaceI.exibeMensagem("Aresta não adicionada! Verifique a existência dos vértices informados e de suas ligações!");
         }
     }
 
     private mxCell insereVerticeInterface(String nomeVertice, String tipoVertice) {
         mxCell novoVertice = null;
         if (listaVertices.get(nomeVertice) == null) {
-            mxGraph grafo = i.getPainel();
+            mxGraph grafo = interfaceI.getPainel();
             Object pai = grafo.getDefaultParent();
             grafo.getModel().beginUpdate();
             if (tipoVertice.equalsIgnoreCase("internet")) {
@@ -127,7 +127,7 @@ public class Controlador {
         if (listaArestas.get(criaIdentificador(nomeVertice1, nomeVertice2)) == null
                 && listaArestas.get(criaIdentificador(nomeVertice2, nomeVertice1)) == null) {
 
-            mxGraph grafo = i.getPainel();
+            mxGraph grafo = interfaceI.getPainel();
             Object pai = grafo.getDefaultParent();
             mxCell vertice1 = listaVertices.get(nomeVertice1);
             mxCell vertice2 = listaVertices.get(nomeVertice2);
@@ -142,25 +142,25 @@ public class Controlador {
     }
 
     private void reorganizaLayout() {
-        mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(i.getPainel());
+        mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(interfaceI.getPainel());
         novaOrganizacao.setMinDistanceLimit(0.02);
-        novaOrganizacao.execute(i.getPainel().getDefaultParent());
+        novaOrganizacao.execute(interfaceI.getPainel().getDefaultParent());
     }
 
     public void removeCelula() {
         mxCell celula = celulaSelecionada2 == null ? celulaSelecionada1 : celulaSelecionada2;
         if (celula != null) {
-            i.getPainel().getModel().beginUpdate();
+            interfaceI.getPainel().getModel().beginUpdate();
             if (celula.isEdge()) {
                 removeAresta(celula);
-                i.getPainel().getModel().endUpdate();
-                i.exibeMensagem("Aresta removida com sucesso!");
+                interfaceI.getPainel().getModel().endUpdate();
+                interfaceI.exibeMensagem("Aresta removida com sucesso!");
             }
             else if (celula.isVertex()) {
                 removeArestasDeVertice(celula);
                 removeVertice(celula);
-                i.getPainel().getModel().endUpdate();
-                i.exibeMensagem("Vértice removido com sucesso!");
+                interfaceI.getPainel().getModel().endUpdate();
+                interfaceI.exibeMensagem("Vértice removido com sucesso!");
                 //String nomeCelula = (String) celula.getValue();
                 //Principal.removeVertice(nomeCelula);
             }
@@ -169,7 +169,7 @@ public class Controlador {
     }
 
     private mxCell removeAresta(mxCell aresta) {
-        mxCell removida = (mxCell) i.getPainel().getModel().remove(aresta);
+        mxCell removida = (mxCell) interfaceI.getPainel().getModel().remove(aresta);
         for (String identificador : listaArestas.keySet()) {
             if (listaArestas.get(identificador).equals(removida)) {
                 return listaArestas.remove(identificador);
@@ -179,7 +179,7 @@ public class Controlador {
     }
 
     private mxCell removeVertice(mxCell vertice) {
-        mxCell removido = (mxCell) i.getPainel().getModel().remove(vertice);
+        mxCell removido = (mxCell) interfaceI.getPainel().getModel().remove(vertice);
         Principal.removeVertice((String) removido.getValue());
         listaVertices.remove((String) removido.getValue());
         if (listaVertices.isEmpty()) {
@@ -191,24 +191,24 @@ public class Controlador {
     private void removeArestasDeVertice(mxCell vertice) {
         if (Principal.removeAresta((String) vertice.getValue())) {
             while (vertice.getEdgeCount() > 0) {
-                i.getPainel().getModel().remove(vertice.getEdgeAt(0)); //Removendo sempre a primeira aresta do vértice
+                interfaceI.getPainel().getModel().remove(vertice.getEdgeAt(0)); //Removendo sempre a primeira aresta do vértice
             }
         }
     }
 
     public void exportaConfiguracoes() {
-        String diretorio = i.selecionaDiretorioSalvamento();
+        String diretorio = interfaceI.selecionaDiretorioSalvamento();
         if (diretorio != null) {
             try {
                 Principal.salvaArquivoConfiguracao(diretorio);
-                i.exibeMensagem("As configurações foram salvas com sucesso!");
+                interfaceI.exibeMensagem("As configurações foram salvas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
-                i.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
+                interfaceI.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
             }
         }
         else {
-            i.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
+            interfaceI.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
         }
     }
 
@@ -217,7 +217,7 @@ public class Controlador {
     }
 
     public void cliqueEsquerdo(int x, int y) {
-        mxCell selecionada = (mxCell) i.getAreaComponentes().getCellAt(x, y);
+        mxCell selecionada = (mxCell) interfaceI.getAreaComponentes().getCellAt(x, y);
 
         if (selecionada == null) {
             celulaSelecionada1 = celulaSelecionada2 = null;
@@ -231,13 +231,13 @@ public class Controlador {
                 celulaSelecionada1 = selecionada;
                 if (selecionada.isVertex()) {
                     LinkedList<Vertice> caminhos = Principal.identificaCaminhos((String) selecionada.getValue(), false);
-                    destacaCaminhosInterface(i, caminhos);
+                    destacaCaminhosInterface(interfaceI, caminhos);
                 }
             }
             else {
                 if (celulaSelecionada1.equals(selecionada)) {
                     celulaSelecionada1 = null;
-                    i.getPainel().setSelectionCell(celulaSelecionada1);
+                    interfaceI.getPainel().setSelectionCell(celulaSelecionada1);
                 }
                 else if (celulaSelecionada2 == null) {
                     celulaSelecionada2 = selecionada;
@@ -256,7 +256,7 @@ public class Controlador {
                             if (v1 != null && v2 != null) {
                                 if (v1.isTerminal() && v2.isTerminal()) {
                                     listaCaminhos = new LinkedList();
-                                    destacaAntecessores(i, verticeAtual);
+                                    destacaAntecessores(interfaceI, verticeAtual);
                                     break;
                                 }
                             }
@@ -265,7 +265,7 @@ public class Controlador {
                 }
                 else {
                     celulaSelecionada1 = selecionada;
-                    i.getPainel().setSelectionCell(celulaSelecionada1);
+                    interfaceI.getPainel().setSelectionCell(celulaSelecionada1);
                     celulaSelecionada2 = null;
                 }
             }
@@ -278,28 +278,28 @@ public class Controlador {
             xB = x;
             yB = y;
         }
-        atualizaDistanciaEuclidiana(i);
+        atualizaDistanciaEuclidiana(interfaceI);
     }
 
     public void removeSelecao(int x, int y) {
-        mxCell selecionada = (mxCell) i.getAreaComponentes().getCellAt(x, y);
-        i.getPainel().removeSelectionCell(selecionada);
+        mxCell selecionada = (mxCell) interfaceI.getAreaComponentes().getCellAt(x, y);
+        interfaceI.getPainel().removeSelectionCell(selecionada);
     }
 
     public void importaConfiguracoes() {
-        String diretorio = i.selecionaDiretorioAbertura();
+        String diretorio = interfaceI.selecionaDiretorioAbertura();
         if (diretorio != null) {
             try {
                 Principal.leArquivoConfiguacao(diretorio);
                 trasfereModelParaInterface(Principal.getGrafo());
-                i.exibeMensagem("Suas configurações foram importadas com sucesso!");
+                interfaceI.exibeMensagem("Suas configurações foram importadas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
-                i.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
+                interfaceI.exibeMensagem("Houve um erro na criação do arquivo! Por favor, tente com outro diretório.");
             }
         }
         else {
-            i.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
+            interfaceI.exibeMensagem("Operação cancelada! Nenhum diretorio foi informado!");
         }
     }
 
@@ -329,12 +329,12 @@ public class Controlador {
     public void defineZoom(int rotacaoRoda, boolean ctrlPressionado) {
         if (ctrlPressionado) {
             if (rotacaoRoda > 0) {
-                i.getAreaComponentes().zoomOut();
-                i.getAreaComponentes().zoomAndCenter();
+                interfaceI.getAreaComponentes().zoomOut();
+                interfaceI.getAreaComponentes().zoomAndCenter();
             }
             else {
-                i.getAreaComponentes().zoomIn();
-                i.getAreaComponentes().zoomAndCenter();
+                interfaceI.getAreaComponentes().zoomIn();
+                interfaceI.getAreaComponentes().zoomAndCenter();
             }
         }
     }
@@ -389,6 +389,6 @@ public class Controlador {
     }
 
     public void defineItemSelecionado() {
-        tipo_aparelho = i.getConteudoCombobox();
+        tipo_aparelho = interfaceI.getConteudoCombobox();
     }
 }

@@ -6,9 +6,6 @@
 package Observer;
 
 import Control.Controlador;
-import Control.Principal;
-import View.InterfacePrincipal;
-import com.mxgraph.layout.mxFastOrganicLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
