@@ -15,9 +15,7 @@ import Observer.ActionEventListenerSaida;
 import Observer.ActionEventListenerSelecionaAparelho;
 import Observer.EventosMouse;
 import View.InterfacePrincipal;
-import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -258,8 +256,8 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
         String diretorio = interfaceI.selecionaDiretorioAbertura();
         if (diretorio != null) {
             try {
-                principal.leArquivoConfiguacao(diretorio);
-                trasfereModelParaInterface(principal.getGrafo());
+                Arquivo.trasfereParaGrafo(diretorio, grafo);
+                trasfereModelParaInterface(grafo);
                 interfaceI.exibeMensagem("Suas configurações foram importadas com sucesso!");
             }
             catch (IOException | ExceptionInInitializerError ex) {
