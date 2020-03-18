@@ -1,4 +1,4 @@
-package DAO;
+package Model;
 
 import Model.*;
 import java.util.LinkedList;

@@ -1,6 +1,6 @@
 package Control;
 
-import DAO.Grafo;
+import Model.Grafo;
 import Model.Aresta;
 import Model.Arquivo;
 import Model.Dijkstra;
@@ -111,8 +111,7 @@ public class Controlador {
             }
             listaVertices.put(nomeVertice, novoVertice);
             if (!listaVertices.isEmpty() && primeiroVertice != null) {
-                mxCell novaAresta = interfaceI.adicionaAresta("", primeiroVertice, novoVertice);
-                novaAresta.setVisible(false);
+                interfaceI.adicionaAresta("", primeiroVertice, novoVertice, false);
             }
             else {
                 primeiroVertice = novoVertice;
@@ -127,7 +126,7 @@ public class Controlador {
                 && listaArestas.get(criaIdentificador(nomeVertice2, nomeVertice1)) == null) {
             mxCell vertice1 = listaVertices.get(nomeVertice1);
             mxCell vertice2 = listaVertices.get(nomeVertice2);
-            mxCell novaAresta = interfaceI.adicionaAresta(nomeAresta, vertice1, vertice2);
+            mxCell novaAresta = interfaceI.adicionaAresta(nomeAresta, vertice1, vertice2, true);
             listaArestas.put(criaIdentificador(nomeVertice1, nomeVertice2), novaAresta);
             return novaAresta;
         }
@@ -175,8 +174,10 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
         Vertice verticeBuscados = grafo.buscaVertice((String) vertex.getValue());
         LinkedList<Aresta> listaAdjacentes = verticeBuscados.getArestas();
         while (vertex.getEdgeCount() > 0) {
-            Vertice verticeAdjacente = listaAdjacentes.get(0).getFim();
-            grafo.removeAresta(verticeBuscados.getNome(), verticeAdjacente.getNome());
+            if (!listaAdjacentes.isEmpty()) {
+                Vertice verticeAdjacente = listaAdjacentes.get(0).getFim();
+                grafo.removeAresta(verticeBuscados.getNome(), verticeAdjacente.getNome());
+            }
             interfaceI.removeCelula(vertex.getEdgeAt(0));
         }
     }
@@ -208,7 +209,7 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
             celulaSelecionada1 = celulaSelecionada2 = null;
         }
         else if (selecionada.isEdge()) {
-            removeSelecao(selecionada);
+            removeSelecao(x, y);
             celulaSelecionada1 = celulaSelecionada2 = null;
         }
         else {
@@ -220,14 +221,11 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
                 }
             }
             else {
-                if (celulaSelecionada1.equals(selecionada)) {
-                }
-                else if (celulaSelecionada2 == null) {
+                if (!celulaSelecionada1.equals(selecionada) && celulaSelecionada2 == null) {
                     celulaSelecionada2 = selecionada;
+                    removeSelecao(x, y);
                     LinkedList<Vertice> caminhos = obtemMenoresCaminhos((String) celulaSelecionada1.getValue(), true);
-                    if (caminhos != null) {
-                        iniciaVerreduraSelecao(caminhos);
-                    }
+                    iniciaVerreduraSelecao(caminhos);
                 }
                 else {
                     celulaSelecionada1 = selecionada;
@@ -248,7 +246,8 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
         atualizaDistanciaEuclidiana();
     }
 
-    public void removeSelecao(mxCell selecionada) {
+    public void removeSelecao(int x, int y) {
+        mxCell selecionada = (mxCell) interfaceI.getAreaComponentes().getCellAt(x, y);
         interfaceI.getPainel().removeSelectionCell(selecionada);
     }
 
@@ -371,19 +370,21 @@ TALVEZ NAO PRECISE MAIS DESSE METODO
     private void iniciaVerreduraSelecao(LinkedList<Vertice> caminhos) {
         Vertice v1, v2;
         v1 = v2 = null;
-        for (int j = 0; j < caminhos.size(); j++) {
-            Vertice verticeAtual = caminhos.get(j);
-            if (verticeAtual.getNome().equals(celulaSelecionada2.getValue())) {
-                v2 = verticeAtual;
-            }
-            else if (verticeAtual.getNome().equals(celulaSelecionada1.getValue())) {
-                v1 = verticeAtual;
-            }
-            if (v1 != null && v2 != null) {
-                if (v1.isTerminal() && v2.isTerminal()) {
-                    listaCaminhos = new LinkedList();
-                    destacaAntecessores(verticeAtual);
-                    break;
+        if (caminhos != null) {
+            for (int j = 0; j < caminhos.size(); j++) {
+                Vertice verticeAtual = caminhos.get(j);
+                if (verticeAtual.getNome().equals(celulaSelecionada2.getValue())) {
+                    v2 = verticeAtual;
+                }
+                else if (verticeAtual.getNome().equals(celulaSelecionada1.getValue())) {
+                    v1 = verticeAtual;
+                }
+                if (v1 != null && v2 != null) {
+                    if (v1.isTerminal() && v2.isTerminal()) {
+                        listaCaminhos = new LinkedList();
+                        destacaAntecessores(verticeAtual);
+                        break;
+                    }
                 }
             }
         }

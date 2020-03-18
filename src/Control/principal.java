@@ -1,6 +1,6 @@
 package Control;
 
-import DAO.Grafo;
+import Model.Grafo;
 import Model.Dijkstra;
 
 public final class principal {

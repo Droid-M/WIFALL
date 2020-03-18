@@ -5,7 +5,6 @@
  */
 package Model;
 
-import DAO.Grafo;
 import Model.Aresta;
 import Model.Vertice;
 import java.io.BufferedReader;

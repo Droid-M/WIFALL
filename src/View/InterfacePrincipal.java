@@ -251,9 +251,10 @@ public class InterfacePrincipal extends JFrame {
         return novoVertice;
     }
 
-    public mxCell adicionaAresta(String pesoAresta, mxCell vertice1, mxCell vertice2) {
+    public mxCell adicionaAresta(String pesoAresta, mxCell vertice1, mxCell vertice2, boolean visibilidade) {
         grafo.getModel().beginUpdate();
         mxCell novaAresta = (mxCell) grafo.insertEdge(grafo.getDefaultParent(), pesoAresta, pesoAresta, vertice1, vertice2, estilo_aresta);
+        novaAresta.setVisible(visibilidade);
         reorganizaLayout();
         grafo.getModel().endUpdate();
         return novaAresta;
@@ -262,6 +263,8 @@ public class InterfacePrincipal extends JFrame {
     private void reorganizaLayout() {
         mxFastOrganicLayout novaOrganizacao = new mxFastOrganicLayout(grafo);
         novaOrganizacao.setMinDistanceLimit(0.02);
+        novaOrganizacao.setForceConstant(150);
+        novaOrganizacao.setUseInputOrigin(true);
         novaOrganizacao.execute(grafo.getDefaultParent());
     }
 
